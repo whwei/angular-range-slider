@@ -6,30 +6,32 @@ angular.module('app.directives.angularRangeSlider', [])
       <div class="angular-range-slider">\
         <div class="angular-range-slider-range">\
           <div class="angular-range-slider-track"></div>\
-          <div class="angular-range-slider-handlers"></div>\
+          <div class="angular-range-slider-handles"></div>\
         </div>\
         <div class="angular-range-slider-values">\
-          {{handlers | json}}\
+          {{handles | json}}\
         </div>\
       </div>\
     ',
     replace: true,
     scope: {
-      handlers: '=',
+      handles: '=',
       formatter: '=',
       parser: '=',
       min: '@',
-      max: '@'
+      max: '@',
+      step: '@'
     },
     link: function(scope, element, attr) {
-      var handlerTpl = '<span class="angular-range-slider-handler"></span>',
-          slider = element[0],handerContainer = slider.querySelector('.angular-range-slider-handlers'),$track = angular.element(slider.querySelector('.angular-range-slider-track')),
+      var slider = element[0],handerContainer = slider.querySelector('.angular-range-slider-handles'),$track = angular.element(slider.querySelector('.angular-range-slider-track')),
           $doc = angular.element(document.documentElement),
-          $handlers;
-
+          $handles;
 
       var totalWidth = slider.clientWidth,
           totalValue = scope.max - scope.min,
+          stepNum = totalValue / scope.step,
+          stepValue = scope.step,
+          stepWidth = totalWidth / stepNum,
           currentHandler,
           currentPos = -1,
           prevHandler,
@@ -38,24 +40,27 @@ angular.module('app.directives.angularRangeSlider', [])
           offset,
           left;
 
-      scope.$watch('handlers', function (nv) {
-        initHandlers();
+      scope.$watch('handles', function (nv) {
+        scope.handles.sort(function (a, b) {
+            return a > b ? 1 : -1;
+        });
+        initHandles();
         fixPosition();
       }, true);
 
 
       function bindEvent () {
-        $handlers.bind('mousedown', function (e) {
+        $handles.bind('mousedown', function (e) {
           offset = 0;
           left = this.offsetLeft;
           startX = e.screenX;
           currentHandler = this;
 
           // find current , prev & next handler
-          for (var i = $handlers.length - 1; i >= 0; i--) {
-            if ($handlers[i] == currentHandler) {
-              prevHandler = $handlers[i - 1];
-              nextHandler = $handlers[i + 1];
+          for (var i = $handles.length - 1; i >= 0; i--) {
+            if ($handles[i] == currentHandler) {
+              prevHandler = $handles[i - 1];
+              nextHandler = $handles[i + 1];
               currentPos = i;
               break;
             }
@@ -78,21 +83,44 @@ angular.module('app.directives.angularRangeSlider', [])
 
           var newLeft = left + offset;
 
+          // if (newLeft <= totalWidth && newLeft >= 0) {
+          //   // not between prev & next
+          //   if ((prevHandler && newLeft <= prevHandler.offsetLeft) ||
+          //       (nextHandler && newLeft >= nextHandler.offsetLeft)) {
+          //     return;     
+          //   };
+
+          //   currentHandler.style.left = Math.round(stepNum * newLeft / totalWidth) * stepWidth + 'px';
+          //   console.log( Math.round(stepNum * newLeft / totalWidth) * stepWidth );
+          // } else if (newLeft > totalWidth) {
+
+          //   var max = (nextHandler && Math.round(stepNum * nextHandler.offsetLeft / totalWidth) * stepWidth) || totalWidth;
+
+          //   currentHandler.style.left = max + 'px';
+          // } else if (newLeft < 0) {
+
+          //   var min = (prevHandler && Math.round(stepNum * prevHandler.offsetLeft / totalWidth) * stepWidth) || 0;
+
+          //   currentHandler.style.left = min + 'px';
+          // }
+
           if (newLeft <= totalWidth && newLeft >= 0) {
-            // between prev & next
-            if ((prevHandler && newLeft <= prevHandler.offsetLeft) ||
-                (nextHandler && newLeft >= nextHandler.offsetLeft)) {
-              return;     
+            // not between prev & next
+            if (prevHandler && newLeft <= prevHandler.offsetLeft) {
+              newLeft = prevHandler.offsetLeft;
+            } else if (nextHandler && newLeft >= nextHandler.offsetLeft) {
+              newLeft = nextHandler.offsetLeft;
             };
-            currentHandler.style.left = newLeft + 'px';
+
           } else if (newLeft > totalWidth) {
-            var max = (nextHandler && nextHandler.offsetLeft) || totalWidth;
-            currentHandler.style.left = max + 'px';
+            newLeft = totalWidth;
           } else if (newLeft < 0) {
-            var min = (prevHandler && prevHandler.offsetLeft) || 0;
-            currentHandler.style.left = min + 'px';
+            newLeft = 0;
           }
-          scope.handlers[currentPos] = totalValue * (currentHandler.offsetLeft / totalWidth);
+
+          currentHandler.style.left = Math.round(stepNum * newLeft / totalWidth) * stepWidth + 'px';
+
+          scope.handles[currentPos] = stepValue * Math.round(stepNum * newLeft / totalWidth);
           scope.$apply();
         }
       }
@@ -100,28 +128,29 @@ angular.module('app.directives.angularRangeSlider', [])
 
       // fix position
       function fixPosition() {
-        angular.forEach(scope.handlers, function (h, i) {
-          $handlers[i].style.left = totalWidth * (h / totalValue) + 'px';
+        angular.forEach(scope.handles, function (h, i) {
+          $handles[i].style.left = Math.round( h / stepValue) * stepWidth + 'px';
         });  
       }
 
-      function initHandlers () {
+      function initHandles () {
         var num = slider.querySelectorAll('.angular-range-slider-handler').length;
 
-        if (scope.handlers.length !== num) {
+        if (scope.handles.length !== num) {
           var count = 0,
-              fragment = document.createDocumentFragment();
+              fragment = document.createDocumentFragment(),
+              pgFragment = document.createDocumentFragment();
 
           handerContainer.innerHTML = '';
 
-          angular.forEach(scope.handlers, function (h, i) {
+          angular.forEach(scope.handles, function (h, i) {
             var handler = document.createElement('span');
             handler.className = 'angular-range-slider-handler angular-range-slider-handler-' + (count++);
             fragment.appendChild(handler);
           });
 
           handerContainer.appendChild(fragment);
-          $handlers = angular.element(slider.querySelectorAll('.angular-range-slider-handler'));
+          $handles = angular.element(slider.querySelectorAll('.angular-range-slider-handler'));
 
           bindEvent();
         }
