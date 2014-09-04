@@ -11,7 +11,7 @@
   border-radius: 2px;
   background-color: #999;
 }
-.angular-range-slider-handler {
+.angular-range-slider-handle {
   position: absolute;
   height: 0;
   width: 0;
@@ -20,25 +20,39 @@
   border-right-width: 8px;
   transform: translateX(-50%);
   cursor: col-resize;
-}
-.angular-range-slider-handler:nth-child(odd) {
   top: -8px;
   border-bottom-color: #666;
 }
-.angular-range-slider-handler:nth-child(even) {
-  bottom: -8px;
-  border-top-color: #666;
+.angular-range-slider-handle i {
+  display: none;
+  position: relative;
+  padding: 0.2em 0.5em;
+  border-radius: 3px;
+  background-color: #494949;
+  color: white;
+  font-style: normal;
+  font-size: 0.8em;
+  transform: translate(-50%, -35px);
 }
 
-.angular-range-slider-handler:nth-child(1) {
+/*.angular-range-slider-handle:nth-child(odd) {
+  top: -8px;
+  border-bottom-color: #666;
+}
+.angular-range-slider-handle:nth-child(even) {
+  bottom: -8px;
+  border-top-color: #666;
+}*/
+
+.angular-range-slider-handle:nth-child(1) {
   left: 10px;
 }
-.angular-range-slider-handler:nth-child(2) {
+.angular-range-slider-handle:nth-child(2) {
   left: 30px;
 }
-.angular-range-slider-handler:nth-child(3) {
+.angular-range-slider-handle:nth-child(3) {
   left: 60px;
 }
-.angular-range-slider-handler:nth-child(4) {
+.angular-range-slider-handle:nth-child(4) {
   left: 90px;
 }

@@ -1,5 +1,5 @@
 angular.module('app.directives.angularRangeSlider', [])
-.directive('angularRangeSlider', function () {
+.directive('angularRangeSlider', ['$compile', function ($compile) {
   return {
     restrict: 'AE',
     template: '\
@@ -23,7 +23,9 @@ angular.module('app.directives.angularRangeSlider', [])
       step: '@'
     },
     link: function(scope, element, attr) {
-      var slider = element[0],handerContainer = slider.querySelector('.angular-range-slider-handles'),$track = angular.element(slider.querySelector('.angular-range-slider-track')),
+      var slider = element[0],
+          handleContainer = slider.querySelector('.angular-range-slider-handles'),
+          $track = angular.element(slider.querySelector('.angular-range-slider-track')),
           $doc = angular.element(document.documentElement),
           $handles;
 
@@ -32,10 +34,10 @@ angular.module('app.directives.angularRangeSlider', [])
           stepNum = totalValue / scope.step,
           stepValue = scope.step,
           stepWidth = totalWidth / stepNum,
-          currentHandler,
+          currentHandle,
           currentPos = -1,
-          prevHandler,
-          nextHandler,
+          prevHandle,
+          nextHandle,
           startX,
           offset,
           left;
@@ -54,62 +56,45 @@ angular.module('app.directives.angularRangeSlider', [])
           offset = 0;
           left = this.offsetLeft;
           startX = e.screenX;
-          currentHandler = this;
+          currentHandle = this;
 
-          // find current , prev & next handler
+          // find current , prev & next handle
           for (var i = $handles.length - 1; i >= 0; i--) {
-            if ($handles[i] == currentHandler) {
-              prevHandler = $handles[i - 1];
-              nextHandler = $handles[i + 1];
+            if ($handles[i] == currentHandle) {
+              prevHandle = $handles[i - 1];
+              nextHandle = $handles[i + 1];
               currentPos = i;
               break;
             }
           };
 
+          // show value
+          currentHandle.querySelector('i').style.display = 'inline-block';
+
           $doc.bind('mousemove', mouseMoveHandler);
         });
 
         $doc.bind('mouseup', function (e) {
-          if (currentHandler) {
+          if (currentHandle) {
             $doc.unbind('mousemove', mouseMoveHandler);
-            currentHandler = null;
+            currentHandle.querySelector('i').style.display = 'none';
+            currentHandle = null;
           }
         });
 
         function mouseMoveHandler (e) {
-          if (!currentHandler)  return;
+          if (!currentHandle)  return;
 
           offset = e.screenX - startX;
 
           var newLeft = left + offset;
 
-          // if (newLeft <= totalWidth && newLeft >= 0) {
-          //   // not between prev & next
-          //   if ((prevHandler && newLeft <= prevHandler.offsetLeft) ||
-          //       (nextHandler && newLeft >= nextHandler.offsetLeft)) {
-          //     return;     
-          //   };
-
-          //   currentHandler.style.left = Math.round(stepNum * newLeft / totalWidth) * stepWidth + 'px';
-          //   console.log( Math.round(stepNum * newLeft / totalWidth) * stepWidth );
-          // } else if (newLeft > totalWidth) {
-
-          //   var max = (nextHandler && Math.round(stepNum * nextHandler.offsetLeft / totalWidth) * stepWidth) || totalWidth;
-
-          //   currentHandler.style.left = max + 'px';
-          // } else if (newLeft < 0) {
-
-          //   var min = (prevHandler && Math.round(stepNum * prevHandler.offsetLeft / totalWidth) * stepWidth) || 0;
-
-          //   currentHandler.style.left = min + 'px';
-          // }
-
           if (newLeft <= totalWidth && newLeft >= 0) {
             // not between prev & next
-            if (prevHandler && newLeft <= prevHandler.offsetLeft) {
-              newLeft = prevHandler.offsetLeft;
-            } else if (nextHandler && newLeft >= nextHandler.offsetLeft) {
-              newLeft = nextHandler.offsetLeft;
+            if (prevHandle && newLeft <= prevHandle.offsetLeft) {
+              newLeft = prevHandle.offsetLeft;
+            } else if (nextHandle && newLeft >= nextHandle.offsetLeft) {
+              newLeft = nextHandle.offsetLeft;
             };
 
           } else if (newLeft > totalWidth) {
@@ -118,7 +103,7 @@ angular.module('app.directives.angularRangeSlider', [])
             newLeft = 0;
           }
 
-          currentHandler.style.left = Math.round(stepNum * newLeft / totalWidth) * stepWidth + 'px';
+          currentHandle.style.left = Math.round(stepNum * newLeft / totalWidth) * stepWidth + 'px';
 
           scope.handles[currentPos] = stepValue * Math.round(stepNum * newLeft / totalWidth);
           scope.$apply();
@@ -134,23 +119,28 @@ angular.module('app.directives.angularRangeSlider', [])
       }
 
       function initHandles () {
-        var num = slider.querySelectorAll('.angular-range-slider-handler').length;
+        var num = slider.querySelectorAll('.angular-range-slider-handle').length;
 
         if (scope.handles.length !== num) {
           var count = 0,
               fragment = document.createDocumentFragment(),
               pgFragment = document.createDocumentFragment();
 
-          handerContainer.innerHTML = '';
+          handleContainer.innerHTML = '';
 
           angular.forEach(scope.handles, function (h, i) {
-            var handler = document.createElement('span');
-            handler.className = 'angular-range-slider-handler angular-range-slider-handler-' + (count++);
-            fragment.appendChild(handler);
-          });
+            var handle = document.createElement('span'),
+                tip = document.createElement('i');
 
-          handerContainer.appendChild(fragment);
-          $handles = angular.element(slider.querySelectorAll('.angular-range-slider-handler'));
+            tip.setAttribute('ng-bind', 'handles[' + i + ']');
+
+            handle.appendChild(tip);
+            handle.className = 'angular-range-slider-handle angular-range-slider-handle-' + (count++);
+            fragment.appendChild(handle);
+          });
+          $compile(fragment)(scope);
+          handleContainer.appendChild(fragment);
+          $handles = angular.element(slider.querySelectorAll('.angular-range-slider-handle'));
 
           bindEvent();
         }
@@ -158,4 +148,4 @@ angular.module('app.directives.angularRangeSlider', [])
 
     }
   }  
-});
+}]);
