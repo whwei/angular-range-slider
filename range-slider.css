@@ -1,0 +1,44 @@
+
+.angular-range-slider {
+  -webkit-user-select: none;
+}
+.angular-range-slider-range {
+  position: relative;
+  margin: 30px 0;
+}
+.angular-range-slider-track {
+  height: 5px;
+  border-radius: 2px;
+  background-color: #999;
+}
+.angular-range-slider-handler {
+  position: absolute;
+  height: 0;
+  width: 0;
+  border: 15px solid transparent;
+  border-left-width: 8px;
+  border-right-width: 8px;
+  transform: translateX(-50%);
+  cursor: col-resize;
+}
+.angular-range-slider-handler:nth-child(odd) {
+  top: -8px;
+  border-bottom-color: #666;
+}
+.angular-range-slider-handler:nth-child(even) {
+  bottom: -8px;
+  border-top-color: #666;
+}
+
+.angular-range-slider-handler:nth-child(1) {
+  left: 10px;
+}
+.angular-range-slider-handler:nth-child(2) {
+  left: 30px;
+}
+.angular-range-slider-handler:nth-child(3) {
+  left: 60px;
+}
+.angular-range-slider-handler:nth-child(4) {
+  left: 90px;
+}
