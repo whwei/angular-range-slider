@@ -9,20 +9,25 @@ angular.module('app.directives.angularRangeSlider', [])
           <div class="angular-range-slider-handles"></div>\
         </div>\
         <div class="angular-range-slider-values">\
-          {{handles | json}}\
+          <ul>\
+            <li ng-repeat="v in displayValues track by $index" style="width: {{100 / displayValues.length}}%"><input type="text" ng-model="displayValues[$index]" ng-change="displayValueChange($index)" /></li>\
+          </ul>\
         </div>\
+        {{handles | json}}<br />\
+        {{displayValues | json}}\
       </div>\
     ',
     replace: true,
     scope: {
       handles: '=',
-      formatter: '=',
-      parser: '=',
+      formatter: '&',
+      parser: '&',
       min: '@',
       max: '@',
       step: '@'
     },
     link: function(scope, element, attr) {
+
       var slider = element[0],
           handleContainer = slider.querySelector('.angular-range-slider-handles'),
           $track = angular.element(slider.querySelector('.angular-range-slider-track')),
@@ -42,13 +47,33 @@ angular.module('app.directives.angularRangeSlider', [])
           offset,
           left;
 
+      if (angular.isUndefined(attr.formatter)) {
+        scope.formatter = function (input) {
+          return input;
+        };
+      }
+
+      if (angular.isUndefined(attr.parser)) {
+        scope.parser = function (input) {
+          return input;
+        };
+      }
+
       scope.$watch('handles', function (nv) {
         scope.handles.sort(function (a, b) {
             return a > b ? 1 : -1;
         });
+        scope.displayValues = scope.handles.map(function (h) {
+          return scope.formatter(h);
+        });
         initHandles();
         fixPosition();
       }, true);
+
+      scope.displayValueChange = function (index) {
+        scope.handles[index] = scope.parser(scope.displayValues[index]);
+        scope.$apply();
+      };
 
 
       function bindEvent () {
@@ -115,7 +140,7 @@ angular.module('app.directives.angularRangeSlider', [])
       function fixPosition() {
         angular.forEach(scope.handles, function (h, i) {
           $handles[i].style.left = Math.round( h / stepValue) * stepWidth + 'px';
-        });  
+        });
       }
 
       function initHandles () {
