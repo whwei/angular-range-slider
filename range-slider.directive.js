@@ -20,8 +20,8 @@ angular.module('app.directives.angularRangeSlider', [])
     replace: true,
     scope: {
       handles: '=',
-      formatter: '&',
-      parser: '&',
+      formatter: '=',
+      parser: '=',
       min: '@',
       max: '@',
       step: '@'
