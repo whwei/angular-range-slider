@@ -43,3 +43,6 @@
 .angular-range-slider-values li {
   float: left;
 }
+.angular-range-slider-values .invalid {
+  color: red;
+}

@@ -71,8 +71,17 @@ angular.module('app.directives.angularRangeSlider', [])
       }, true);
 
       scope.displayValueChange = function (index) {
-        scope.handles[index] = scope.parser(scope.displayValues[index]);
-        scope.$apply();
+        var newVal = scope.parser(scope.displayValues[index]),
+            prevVal = scope.handles[index - 1] || +scope.min,
+            nextVal = scope.handles[index + 1] || +scope.max,
+            input = angular.element(slider.querySelectorAll('.angular-range-slider-values input')[index]);
+
+        if (newVal <= nextVal && newVal >= prevVal) {
+          scope.handles[index] = newVal;
+          input.removeClass('invalid');
+        } else {
+          input.addClass('invalid');
+        }
       };
 
 
